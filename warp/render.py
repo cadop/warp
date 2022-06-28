@@ -73,7 +73,7 @@ def bourke_color_map(low, high, v):
 class UsdRenderer:
     """A USD renderer
     """  
-    def __init__(self, path, upaxis="y"):
+    def __init__(self, path, upaxis="y", start_time=0.0, end_time=0.0, time_code=1.0):
         """Construct a UsdRenderer object
         
         Args:
@@ -90,9 +90,9 @@ class UsdRenderer:
         self.root = UsdGeom.Xform.Define(stage, '/root')
 
         self.stage.SetDefaultPrim(self.root.GetPrim())
-        self.stage.SetStartTimeCode(0.0)
-        self.stage.SetEndTimeCode(0.0)
-        self.stage.SetTimeCodesPerSecond(1.0)
+        self.stage.SetStartTimeCode(start_time)
+        self.stage.SetEndTimeCode(end_time)
+        self.stage.SetTimeCodesPerSecond(time_code)
 
         if upaxis == "x":
             UsdGeom.SetStageUpAxis(self.stage, UsdGeom.Tokens.x)

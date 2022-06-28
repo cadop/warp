@@ -868,6 +868,7 @@ def eval_soft_contacts(
     contact_body_pos: wp.array(dtype=wp.vec3),
     contact_body_vel: wp.array(dtype=wp.vec3),
     contact_normal: wp.array(dtype=wp.vec3),
+    soft_contact_locations : wp.array(dtype=float),
     contact_distance: float,
     # outputs
     particle_f: wp.array(dtype=wp.vec3),
@@ -877,6 +878,8 @@ def eval_soft_contacts(
 
     count = contact_count[0]
     if (tid >= count):
+        # There are no contacts, so set everything to zero
+        soft_contact_locations[tid] = 0.0
         return
         
     body_index = contact_body[tid]
@@ -899,6 +902,8 @@ def eval_soft_contacts(
     n = contact_normal[tid]
     c = wp.dot(n, px-bx) - contact_distance
     
+    soft_contact_locations[tid] = c
+
     if (c > ka):
         return
 
@@ -1568,7 +1573,7 @@ def compute_forces(model, state, particle_f, body_f):
 
     # tetrahedral FEM
     if (model.tet_count):
-
+        # print("Evaluating tets")
         wp.launch(kernel=eval_tetrahedra,
                   dim=model.tet_count,
                   inputs=[state.particle_q, state.particle_qd, model.tet_indices, model.tet_poses, model.tet_activations, model.tet_materials],
@@ -1576,7 +1581,7 @@ def compute_forces(model, state, particle_f, body_f):
                   device=model.device)
 
     if (model.body_count and model.contact_count > 0 and model.ground):
-
+        # print("Evaluating body contacts")
         wp.launch(kernel=eval_body_contacts,
                   dim=model.contact_count,
                   inputs=[
@@ -1627,7 +1632,7 @@ def compute_forces(model, state, particle_f, body_f):
 
     # particle shape contact
     if (model.particle_count and model.shape_count):
-        
+        # print('Evaluating Soft Contacts')
         wp.launch(kernel=eval_soft_contacts,
                     dim=model.soft_contact_max,
                     inputs=[
@@ -1647,6 +1652,7 @@ def compute_forces(model, state, particle_f, body_f):
                         model.soft_contact_body_pos,
                         model.soft_contact_body_vel,
                         model.soft_contact_normal,
+                        model.soft_contact_locations,
                         model.soft_contact_distance],
                         # outputs
                     outputs=[

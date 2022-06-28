@@ -1779,6 +1779,7 @@ class ModelBuilder:
         m.soft_contact_body_pos = wp.zeros(m.soft_contact_max, dtype=wp.vec3, device=device)
         m.soft_contact_body_vel = wp.zeros(m.soft_contact_max, dtype=wp.vec3, device=device)
         m.soft_contact_normal = wp.zeros(m.soft_contact_max, dtype=wp.vec3, device=device)
+        m.soft_contact_locations = wp.zeros(m.soft_contact_max, dtype=wp.float32, device=device)
 
         # counts
         m.particle_count = len(self.particle_q)

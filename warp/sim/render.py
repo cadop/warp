@@ -15,10 +15,10 @@ import warp.sim
 
 class SimRenderer(warp.render.UsdRenderer):
     
-    def __init__(self, model: warp.sim.Model, path):
+    def __init__(self, model: warp.sim.Model, path, upaxis="y", start_time=0.0, end_time=0.0, time_code=1.0):
 
         # create USD stage
-        super().__init__(path)
+        super().__init__(path, upaxis=upaxis, start_time=start_time, end_time=end_time, time_code=time_code)
 
         self.model = model
 
@@ -111,19 +111,19 @@ class SimRenderer(warp.render.UsdRenderer):
                     pass
         
 
-
-    def render(self, state: warp.sim.State):
+    def render(self, state: warp.sim.State, particle_size=0.1, particles=True, meshes=True, bodies=True):
 
         if (self.model.particle_count):
 
             particle_q = state.particle_q.numpy()
 
             # render particles
-            self.render_points("particles", particle_q, radius=0.1)
+            if particles: self.render_points("particles", particle_q, radius=particle_size)
 
             # render tris
-            if (self.model.tri_count):
-                self.render_mesh("surface", particle_q, self.model.tri_indices.numpy().squeeze())
+            if meshes:
+                if (self.model.tri_count):
+                    self.render_mesh("surface", particle_q, self.model.tri_indices.numpy().squeeze())
 
             # render springs
             if (self.model.spring_count):
@@ -169,7 +169,7 @@ class SimRenderer(warp.render.UsdRenderer):
            
 
         # update  bodies
-        if (self.model.body_count):
+        if (self.model.body_count) and (bodies):
 
             body_q = state.body_q.numpy()
 
